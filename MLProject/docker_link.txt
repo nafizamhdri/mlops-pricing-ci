@@ -1,1 +1,1 @@
-https://hub.docker.com/r/YOUR_USERNAME/car-price-pred
+https://hub.docker.com/r/nafizamhdri/car-price-pred
