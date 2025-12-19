@@ -47,7 +47,7 @@ jobs:
         run: |
           # Simple extraction of the latest run URL from the MLflow run output or directory inspection
           
-          LATEST_RUN=$(ls -td MLProject/mlruns/1/* | head -1)
+          LATEST_RUN=$(ls -td MLProject/mlruns/0/* | head -1)
           RUN_ID=$(basename $LATEST_RUN)
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
           echo "Run ID is $RUN_ID"
@@ -59,7 +59,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: model-artifacts
-          path: MLProject/mlruns/1/${{ env.RUN_ID }}/artifacts/model
+          path: MLProject/mlruns/0/${{ env.RUN_ID }}/artifacts/model
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2

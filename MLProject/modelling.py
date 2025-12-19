@@ -17,8 +17,9 @@ def main():
     print("Starting Skilled Model Training (Hyperparameter Tuning)")
     
     # 0. Set MLflow URI and Experiment
-    mlflow.set_tracking_uri("sqlite:///mlflow.db")
-    mlflow.set_experiment("Used Car Price Prediction")
+    # 0. Set MLflow URI and Experiment - REMOVED for CI compatibility (uses default FileStore and Experiment 0)
+    # mlflow.set_tracking_uri("sqlite:///mlflow.db")
+    # mlflow.set_experiment("Used Car Price Prediction")
     
     # 1. Load Data
     script_dir = os.path.dirname(os.path.abspath(__file__))
