@@ -44,7 +44,7 @@ def main():
     }
 
     # 4. Start MLflow Run 
-    with mlflow.start_run(run_name="Skilled_Hyperparameter_Tuning"):
+    with mlflow.start_run():
         print("Tuning Hyperparameters with GridSearchCV")
         
         # Grid Search
