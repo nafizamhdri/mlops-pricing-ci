@@ -1,0 +1,87 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build_and_train:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up job
+        run: echo "Starting CI job"
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Check Env
+        run: |
+          python --version
+          pip --version
+
+      - name: Install dependencies
+        run: |
+          pip install mlflow pandas scikit-learn sqlalchemy matplotlib seaborn
+
+      - name: Run mlflow project
+        run: |
+          # Adding --env-manager=local to avoid conda issues in GitHub Actions runner just for speed/simplicity
+          # or we can rely on conda being installed. Standard runners have conda.
+          # But simplest is to install deps (step above) and run with local env manager if possible or let mlflow use conda.
+          # Let's try standard mlflow run which uses conda by default.
+          # We need conda installed. GitHub Actions has it.
+           mlflow run Workflow_CI/MLProject --env-manager=local
+        
+      - name: Get latest MLflow run_id
+        id: get_run_id
+        run: |
+          # Simple extraction of the latest run URL from the MLflow run output or directory inspection
+          # Since we are running locally, the 'mlruns' directory will be created in Workflow_CI/MLProject/mlruns (or CWD/mlruns depending on where run is called)
+          # We ran it from root, targeting Workflow_CI/MLProject. 
+          # MLflow run creates mlruns in the current directory unless specified.
+          
+          # Let's verify where mlruns is.
+          # Assuming it's in the current working directory because we didn't specify tracking uri to be elsewhere (defaults to ./mlruns)
+          
+          LATEST_RUN=$(ls -td mlruns/0/* | head -1)
+          RUN_ID=$(basename $LATEST_RUN)
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          echo "Run ID is $RUN_ID"
+
+      - name: Install Python dependencies (for build-docker)
+        run: pip install mlflow
+
+      - name: Upload to GitHub (Artifacts)
+        uses: actions/upload-artifact@v3
+        with:
+          name: model-artifacts
+          path: mlruns/0/${{ env.RUN_ID }}/artifacts/model
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker Model
+        run: |
+          mlflow models build-docker \
+            --model-uri "runs:/${{ env.RUN_ID }}/model" \
+            --name "${{ secrets.DOCKER_USERNAME }}/car-price-pred:latest"
+
+      - name: Push Docker Image
+        run: |
+          docker push "${{ secrets.DOCKER_USERNAME }}/car-price-pred:latest"
+
+      - name: Complete job
+        run: echo "Job completed successfully"

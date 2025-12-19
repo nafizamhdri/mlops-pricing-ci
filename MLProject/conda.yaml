@@ -1,0 +1,13 @@
+name: input_model
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+    - mlflow
+    - scikit-learn
+    - pandas
+    - matplotlib
+    - seaborn
+    - sqlalchemy
