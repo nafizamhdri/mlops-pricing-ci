@@ -19,10 +19,13 @@ def main():
     # 0. Get script directory for absolute paths
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
-    # 1. Set MLflow URI and Experiment (using absolute path)
-    mlflow_db_path = os.path.join(script_dir, 'mlflow.db')
-    mlflow.set_tracking_uri(f"sqlite:///{mlflow_db_path}")
-    mlflow.set_experiment("Used Car Price Prediction")
+    # 1. MLflow Tracking URI - Let MLflow Projects handle this!
+    # When run via MLflow Projects, it sets tracking URI automatically
+    # Don't override it, otherwise logging will fail!
+    # mlflow_db_path = os.path.join(script_dir, 'mlflow.db')
+    # mlflow.set_tracking_uri(f"sqlite:///{mlflow_db_path}")
+    # mlflow.set_experiment("Used Car Price Prediction")
+    
     
     # 2. Load Data
     data_path = os.path.join(script_dir, 'car_data_processed2.csv')
