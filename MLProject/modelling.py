@@ -45,8 +45,21 @@ def main():
         'min_samples_split': [2, 5]
     }
 
-    # 4. Start MLflow Run 
-    with mlflow.start_run(run_name="Skilled_Hyperparameter_Tuning"):
+    # 4. Start MLflow Run (or use existing if called by MLflow Projects)
+    # Check if there's already an active run (e.g., from MLflow Projects)
+    active_run = mlflow.active_run()
+    
+    if active_run is None:
+        # No active run - create one (standalone execution)
+        run = mlflow.start_run(run_name="Skilled_Hyperparameter_Tuning")
+        should_end_run = True
+    else:
+        # Active run exists (MLflow Projects execution) - use it
+        run = active_run
+        should_end_run = False
+        print(f"Using existing MLflow run: {active_run.info.run_id}")
+    
+    try:
         print("Tuning Hyperparameters with GridSearchCV")
         
         # Grid Search
@@ -121,6 +134,11 @@ def main():
         mlflow.log_artifact(plot_path)
         
         print(f"Run Complete. Check http://127.0.0.1:5000/ . Artifacts saved to {script_dir}")
+    
+    finally:
+        # End run only if we created it (standalone execution)
+        if should_end_run:
+            mlflow.end_run()
 
 if __name__ == "__main__":
     main()
