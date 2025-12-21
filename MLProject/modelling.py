@@ -16,9 +16,15 @@ import os
 def main():
     print("Starting Skilled Model Training (Hyperparameter Tuning)")
     
-
-    # 1. Load Data
+    # 0. Get script directory for absolute paths
     script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # 1. Set MLflow URI and Experiment (using absolute path)
+    mlflow_db_path = os.path.join(script_dir, 'mlflow.db')
+    mlflow.set_tracking_uri(f"sqlite:///{mlflow_db_path}")
+    mlflow.set_experiment("Used Car Price Prediction")
+    
+    # 2. Load Data
     data_path = os.path.join(script_dir, 'car_data_processed2.csv')
 
     if not os.path.exists(data_path):
@@ -40,7 +46,7 @@ def main():
     }
 
     # 4. Start MLflow Run 
-    with mlflow.start_run():
+    with mlflow.start_run(run_name="Skilled_Hyperparameter_Tuning"):
         print("Tuning Hyperparameters with GridSearchCV")
         
         # Grid Search
@@ -73,8 +79,16 @@ def main():
         mlflow.log_metric("MSE", mse)
         mlflow.log_metric("R2", r2)
         
-        # D. Log Model 
-        mlflow.sklearn.log_model(best_model, "model")
+        # D. Log Model
+        print("Logging model to MLflow...")
+        try:
+            # Use simpler syntax - mlflow.sklearn.log_model(model, path)
+            mlflow.sklearn.log_model(best_model, "model")
+            print(" Model logged successfully")
+        except Exception as e:
+            print(f" Error logging model: {e}")
+            import traceback
+            traceback.print_exc()
         
         # E. Create and Log Artifacts
         
